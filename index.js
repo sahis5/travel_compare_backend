@@ -1,21 +1,34 @@
 const express = require('express');
 const cors = require('cors');
+const axios = require('axios');
 
 const app = express();
 app.use(cors());
 
-app.get('/compare', (req, res) => {
+const API_KEY = 'http://indianrailapi.com/api/v2/TrainFare/apikey/<apikey>/TrainNumber/<trainNumber>/From/<stationFrom>/To/<stationTo>/Quota/<quota>'; // Replace this
+
+app.get('/compare', async (req, res) => {
   const { from, to, date } = req.query;
 
   console.log("Compare request:", { from, to, date });
 
-  const dummyData = [
-    { mode: "Bus", provider: "RedBus", price: 850, time: "10h 15m" },
-    { mode: "Train", provider: "IRCTC", price: 620, time: "8h 30m" },
-    { mode: "Flight", provider: "IndiGo", price: 2200, time: "2h 5m" }
-  ];
+  try {
+    const response = await axios.get(`https://api.railwayapi.com/v2/between/source/${from}/dest/${to}/date/${date}/apikey/${API_KEY}/`);
 
-  res.json({ results: dummyData });
+    const trains = response.data.trains || [];
+
+    const formattedData = trains.map(train => ({
+      mode: "Train",
+      provider: "IRCTC",
+      price: Math.floor(Math.random() * 500) + 300, // You can replace with real fare API later
+      time: `${train.src_departure_time} - ${train.dest_arrival_time}`
+    }));
+
+    res.json({ results: formattedData });
+  } catch (err) {
+    console.error("Train API error:", err.message);
+    res.status(500).json({ results: [] });
+  }
 });
 
 const PORT = process.env.PORT || 3000;

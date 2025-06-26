@@ -10,28 +10,28 @@ const API_KEY = '3b53df19ac465bdb64ca9076e2817403'; // Replace this
 app.get('/compare', async (req, res) => {
   const { from, to, date } = req.query;
 
-  console.log("Compare request:", { from, to, date });
+  console.log("Compare Request Received:", { from, to, date });
 
   try {
-    const response = await axios.get(`https://api.railwayapi.com/v2/between/source/${from}/dest/${to}/date/${date}/apikey/${API_KEY}/`);
+    const response = await axios.get(
+      `https://indianrailapi.com/api/v2/TrainBetweenStation/apikey/${API_KEY}/from/${from}/to/${to}/date/${date}/`
+    );
 
-    const trains = response.data.trains || [];
+    console.log("Raw API response:", response.data); // ADD THIS LINE
 
-    const formattedData = trains.map(train => ({
-      mode: "Train",
-      provider: "IRCTC",
-      price: Math.floor(Math.random() * 500) + 300, // You can replace with real fare API later
-      time: `${train.src_departure_time} - ${train.dest_arrival_time}`
+    const trains = response.data.Trains || [];
+
+    const formatted = trains.map(train => ({
+      mode: 'Train',
+      provider: 'IRCTC',
+      price: Math.floor(Math.random() * 500) + 300,
+      time: `${train.DepartureTime} - ${train.ArrivalTime}`
     }));
 
-    res.json({ results: formattedData });
+    res.json({ results: formatted });
+
   } catch (err) {
-    console.error("Train API error:", err.message);
+    console.error("Rail API error:", err.message);
     res.status(500).json({ results: [] });
   }
-});
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
 });

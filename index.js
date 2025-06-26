@@ -5,7 +5,7 @@ const axios = require('axios');
 const app = express();
 app.use(cors());
 
-const API_KEY = 'http://indianrailapi.com/api/v2/TrainFare/apikey/<apikey>/TrainNumber/<trainNumber>/From/<stationFrom>/To/<stationTo>/Quota/<quota>'; // Replace this
+const API_KEY = 'http://indianrailapi.com/api/v2/TrainBetweenStation/apikey/<apikey>/From/<From>/To/<To>'; // Replace this
 
 app.get('/compare', async (req, res) => {
   const { from, to, date } = req.query;

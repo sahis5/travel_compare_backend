@@ -1,37 +1,48 @@
 const express = require('express');
-const cors = require('cors');
 const axios = require('axios');
+const cors = require('cors');
 
 const app = express();
 app.use(cors());
 
-const API_KEY = '3b53df19ac465bdb64ca9076e2817403'; // Replace this
-
 app.get('/compare', async (req, res) => {
   const { from, to, date } = req.query;
 
-  console.log("Compare Request Received:", { from, to, date });
-
   try {
-    const response = await axios.get(
-      `https://indianrailapi.com/api/v2/TrainBetweenStation/apikey/${API_KEY}/from/${from}/to/${to}/date/${date}/`
-    );
+    const options = {
+  method: 'GET',
+  url: 'https://irctc1.p.rapidapi.com/api/v3/getLiveStation',
+  params: {
+    stationCode: 'NDLS',  // or use from req.query.from
+    hours: '3'
+  },
+  headers: {
+    'X-RapidAPI-Key': 'c46d307968msh7acaf27e7c74dfbp1da479jsn3c240194bf6b',  // use your actual key
+    'X-RapidAPI-Host': 'irctc1.p.rapidapi.com'
+  }
+};
 
-    console.log("Raw API response:", response.data); // ADD THIS LINE
 
-    const trains = response.data.Trains || [];
+    const response = await axios.request(options);
+    const trains = response.data.trains || response.data.data || [];
 
-    const formatted = trains.map(train => ({
-      mode: 'Train',
-      provider: 'IRCTC',
-      price: Math.floor(Math.random() * 500) + 300,
-      time: `${train.DepartureTime} - ${train.ArrivalTime}`
+
+    if (!trains) return res.json({ results: [] });
+
+    const results = trains.map(train => ({
+      mode: "Train",
+      provider: "IRCTC",
+      price: Math.floor(Math.random() * 700 + 100), // Dummy price
+      time: `${train.train_number} - ${train.train_name}`
     }));
 
-    res.json({ results: formatted });
+    res.json({ results });
 
-  } catch (err) {
-    console.error("Rail API error:", err.message);
+  } catch (error) {
+    console.error("API Error:", error.message);
     res.status(500).json({ results: [] });
   }
 });
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
